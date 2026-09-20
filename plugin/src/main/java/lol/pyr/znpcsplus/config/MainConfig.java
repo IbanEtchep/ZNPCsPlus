@@ -81,10 +81,8 @@ public interface MainConfig {
 
     @ConfKey("resync-interval")
     @ConfComments({
-            "How often (in seconds) to silently re-send npcs to the players already viewing them.",
-            "The plugin has no way to detect a player's client silently losing track of an npc",
-            "(dropped packets, entity id collisions, client-side glitches, etc), so without this",
-            "an affected npc stays invisible until the plugin is reloaded. Set this to -1 to disable.",
+            "How often (in seconds) to silently re-send npcs to the players already viewing them,",
+            "in case their client desynced. Set this to -1 to disable."
     })
     @DefaultInteger(300)
     int resyncInterval();

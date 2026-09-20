@@ -183,17 +183,7 @@ public class PacketEntity implements PropertyHolder {
         packetFactory.sendHandSwing(player, this, offhand);
     }
 
-    /*
-     * On 26.2+ the vanilla entity id counter was moved out of Entity and its exact
-     * location can no longer be reliably found by reflection. Guessing at a field via
-     * reflection here is dangerous: if the lookup silently matches the wrong field, NPCs
-     * get handed ids that eventually collide with real entities, which destroys the NPC
-     * on the client without the plugin ever knowing (it still renders fine server-side,
-     * hence /npc list and teleport still working while the NPC is invisible in-world).
-     * Instead we hand out ids from the top of the int range, far above anything vanilla's
-     * own counter will reach in a server's uptime, so collisions can't happen regardless
-     * of how the server internals are laid out on any given version.
-     */
+    // 26.2+: no reliable reflection target for vanilla's id counter, so use our own range instead of risking collisions
     private static final AtomicInteger SAFE_ENTITY_ID_COUNTER = new AtomicInteger(Integer.MAX_VALUE / 2);
 
     private static int reserveEntityID() {
