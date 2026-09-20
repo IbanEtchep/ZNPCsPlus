@@ -27,6 +27,7 @@ import lol.pyr.znpcsplus.commands.storage.MigrateCommand;
 import lol.pyr.znpcsplus.commands.storage.SaveAllCommand;
 import lol.pyr.znpcsplus.config.ConfigManager;
 import lol.pyr.znpcsplus.conversion.DataImporterRegistry;
+import lol.pyr.znpcsplus.debug.EntityCounterDebug;
 import lol.pyr.znpcsplus.entity.EntityPropertyImpl;
 import lol.pyr.znpcsplus.entity.EntityPropertyRegistryImpl;
 import lol.pyr.znpcsplus.interaction.ActionFactoryImpl;
@@ -117,6 +118,10 @@ public class ZNpcsPlus {
         log(ChatColor.WHITE + " * Initializing libraries...");
 
         packetEvents.init();
+
+        if (packetEvents.getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_26_2)) {
+            EntityCounterDebug.dump(this::log);
+        }
 
         BukkitAudiences adventure = BukkitAudiences.create(bootstrap);
         shutdownTasks.add(adventure::close);
