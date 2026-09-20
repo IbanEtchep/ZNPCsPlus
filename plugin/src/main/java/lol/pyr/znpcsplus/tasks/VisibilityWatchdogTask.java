@@ -1,5 +1,6 @@
 package lol.pyr.znpcsplus.tasks;
 
+import lol.pyr.znpcsplus.util.FutureUtil;
 import lol.pyr.znpcsplus.util.Viewable;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -18,7 +19,9 @@ public class VisibilityWatchdogTask extends BukkitRunnable {
 
     @Override
     public void run() {
-        Viewable.checkStalled(STALL_THRESHOLD_MILLIS, log);
+        // tags FutureUtil's own thread count onto the stall message, to tell apart "znpcsplus's pool
+        // is maxed out" from "something else exhausted the process's threads and we're a victim of it"
+        Viewable.checkStalled(STALL_THRESHOLD_MILLIS, message -> log.accept(message + " FutureUtil pool size: " + FutureUtil.activeThreads() + "/200"));
         Viewable.heartbeat();
     }
 }
