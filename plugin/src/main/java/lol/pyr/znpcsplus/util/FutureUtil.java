@@ -3,11 +3,18 @@ package lol.pyr.znpcsplus.util;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 public class FutureUtil {
-    private static final ExecutorService executor = Executors.newCachedThreadPool();
+    // like newCachedThreadPool() but capped, so a burst of npc spawns can't exhaust the process's thread limit
+    private static final ExecutorService executor = new ThreadPoolExecutor(
+            0, 200, 60L, TimeUnit.SECONDS,
+            new SynchronousQueue<>(),
+            new ThreadPoolExecutor.CallerRunsPolicy()
+    );
 
     public static CompletableFuture<Void> allOf(Collection<CompletableFuture<?>> futures) {
         return exceptionPrintingRunAsync(() -> {
