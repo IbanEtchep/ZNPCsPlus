@@ -143,6 +143,24 @@ public final class Reflections {
                     .toFieldReflection()
                     .toStaticValueLoader(AtomicInteger.class);
 
+    // 26.2 moved the entity id counter out of Entity and into ServerLevel
+    private static final boolean v26_2 = PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_26_2);
+
+    public static final Class<?> SERVER_LEVEL_CLASS =
+            new ReflectionBuilder(ReflectionPackage.SERVER_LEVEL)
+                    .withClassName("ServerLevel")
+                    .setStrict(v26_2)
+                    .toClassReflection().get();
+
+    public static final ReflectionLazyLoader<AtomicInteger> ATOMIC_ENTITY_ID_FIELD_26_2 =
+            new ReflectionBuilder(ReflectionPackage.SERVER_LEVEL)
+                    .withClassName(SERVER_LEVEL_CLASS)
+                    .withFieldName("ENTITY_COUNTER")
+                    .withExpectResult(AtomicInteger.class)
+                    .setStrict(v26_2)
+                    .toFieldReflection()
+                    .toStaticValueLoader(AtomicInteger.class);
+
     /*
      * All of these folia methods need to be reflected because folia is strictly
      * available on the newest java versions but we need to keep support for Java 8

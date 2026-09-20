@@ -16,7 +16,6 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class PacketEntity implements PropertyHolder {
     private final PacketFactory packetFactory;
@@ -183,12 +182,9 @@ public class PacketEntity implements PropertyHolder {
         packetFactory.sendHandSwing(player, this, offhand);
     }
 
-    // 26.2+: no reliable reflection target for vanilla's id counter, so use our own range instead of risking collisions
-    private static final AtomicInteger SAFE_ENTITY_ID_COUNTER = new AtomicInteger(Integer.MAX_VALUE / 2);
-
     private static int reserveEntityID() {
         if (PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_26_2)) {
-            return SAFE_ENTITY_ID_COUNTER.incrementAndGet();
+            return Reflections.ATOMIC_ENTITY_ID_FIELD_26_2.get().incrementAndGet();
         } else if (PacketEvents.getAPI().getServerManager().getVersion().isNewerThanOrEquals(ServerVersion.V_1_14)) {
             return Reflections.ATOMIC_ENTITY_ID_FIELD.get().incrementAndGet();
         } else {
