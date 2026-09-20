@@ -6,6 +6,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public abstract class Viewable {
@@ -25,6 +26,36 @@ public abstract class Viewable {
     }
 
     private final static ExecutorService visibilityExecutor = Executors.newSingleThreadExecutor();
+
+    private static volatile long lastHeartbeatAt = System.currentTimeMillis();
+    private static volatile Thread executorThread;
+    private static volatile boolean stallLogged = false;
+
+    // pings the executor so an outside watchdog can tell if it's still processing tasks
+    public static void heartbeat() {
+        visibilityExecutor.submit(() -> {
+            executorThread = Thread.currentThread();
+            lastHeartbeatAt = System.currentTimeMillis();
+        });
+    }
+
+    // call from OUTSIDE visibilityExecutor: logs once (until it recovers) if the last heartbeat is older than thresholdMillis
+    public static void checkStalled(long thresholdMillis, Consumer<String> log) {
+        long since = System.currentTimeMillis() - lastHeartbeatAt;
+        if (since <= thresholdMillis) {
+            stallLogged = false;
+            return;
+        }
+        if (stallLogged) return;
+        stallLogged = true;
+        StringBuilder sb = new StringBuilder("[ZNPCsPlus WATCHDOG] visibilityExecutor hasn't responded in " + since + "ms, it is likely stuck.");
+        Thread thread = executorThread;
+        if (thread != null) {
+            sb.append(" Stack trace of the executor thread:\n");
+            for (StackTraceElement element : thread.getStackTrace()) sb.append("    at ").append(element).append('\n');
+        }
+        log.accept(sb.toString());
+    }
     private final Set<Player> viewers = ConcurrentHashMap.newKeySet();
 
     public Viewable() {
